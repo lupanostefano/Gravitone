@@ -12,7 +12,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <StartupObject>Gravitone.Program</StartupObject>
     <SatelliteResourceLanguages>it;en</SatelliteResourceLanguages>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <ApplicationIcon>Gravitone.ico</ApplicationIcon>
     <Product>Gravitone</Product>
     <Company>Stefano Lupano</Company>

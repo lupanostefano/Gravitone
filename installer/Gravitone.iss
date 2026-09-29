@@ -128,37 +128,54 @@ begin
   DownloadPage := CreateDownloadPage(CustomMessage('RuntimeTitle'), CustomMessage('RuntimeText'), nil);
 end;
 
-// Quit a running copy first (an update): the dock gives the taskbar back and releases its files.
+var
+  WasRunning: Boolean;
+
+// Downloads and installs the .NET 9 Desktop Runtime. Runs in interactive and silent installs alike.
+function InstallRuntime: String;
+var
+  Code: Integer;
+begin
+  Result := '';
+  DownloadPage.Clear;
+  DownloadPage.Add('https://aka.ms/dotnet/9.0/windowsdesktop-runtime-win-x64.exe', 'windowsdesktop-runtime-win-x64.exe', '');
+  if not WizardSilent then DownloadPage.Show;
+  try
+    try
+      DownloadPage.Download;
+      if not Exec(ExpandConstant('{tmp}\windowsdesktop-runtime-win-x64.exe'), '/install /quiet /norestart', '', SW_SHOW, ewWaitUntilTerminated, Code)
+        or ((Code <> 0) and (Code <> 3010)) then
+        Result := CustomMessage('RuntimeFailed');
+    except
+      Result := CustomMessage('RuntimeFailed') + #13#10#13#10 + GetExceptionMessage;
+    end;
+  finally
+    if not WizardSilent then DownloadPage.Hide;
+  end;
+end;
+
+// Before copying: make sure the runtime is there, and quit a running copy (an update), which gives the taskbar back
+// and releases its files. Returning a message stops the installation with it.
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   Code: Integer;
 begin
   Result := '';
+  if not RuntimeInstalled then
+  begin
+    Result := InstallRuntime;
+    if Result <> '' then Exit;
+  end;
+  WasRunning := CheckForMutexes('Local\Gravitone.SingleInstance');
   if FileExists(ExpandConstant('{app}\{#AppExe}')) then
     Exec(ExpandConstant('{app}\{#AppExe}'), '--quit', '', SW_HIDE, ewWaitUntilTerminated, Code);
 end;
 
-function NextButtonClick(CurPageID: Integer): Boolean;
+// A silent update (no "Start Gravitone now" box) starts the dock again if it was running before.
+procedure CurStepChanged(CurStep: TSetupStep);
 var
   Code: Integer;
 begin
-  Result := True;
-  if (CurPageID = wpReady) and not RuntimeInstalled then
-  begin
-    DownloadPage.Clear;
-    DownloadPage.Add('https://aka.ms/dotnet/9.0/windowsdesktop-runtime-win-x64.exe', 'windowsdesktop-runtime-win-x64.exe', '');
-    DownloadPage.Show;
-    try
-      try
-        DownloadPage.Download;
-        if not Exec(ExpandConstant('{tmp}\windowsdesktop-runtime-win-x64.exe'), '/install /quiet /norestart', '', SW_SHOW, ewWaitUntilTerminated, Code)
-          or ((Code <> 0) and (Code <> 3010)) then
-          MsgBox(CustomMessage('RuntimeFailed'), mbError, MB_OK);
-      except
-        MsgBox(CustomMessage('RuntimeFailed') + #13#10#13#10 + GetExceptionMessage, mbError, MB_OK);
-      end;
-    finally
-      DownloadPage.Hide;
-    end;
-  end;
+  if (CurStep = ssDone) and WizardSilent and WasRunning then
+    ExecAsOriginalUser(ExpandConstant('{app}\{#AppExe}'), '', '', SW_SHOW, ewNoWait, Code);
 end;
