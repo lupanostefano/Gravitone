@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Gravitone</RootNamespace>
+    <AssemblyName>Gravitone</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>Gravitone.Program</StartupObject>
+    <SatelliteResourceLanguages>it;en</SatelliteResourceLanguages>
+    <Version>0.2.0</Version>
+    <ApplicationIcon>Gravitone.ico</ApplicationIcon>
+    <Product>Gravitone</Product>
+    <Company>Stefano Lupano</Company>
+    <Copyright>© 2026 Stefano Lupano. MIT License.</Copyright>
+    <Description>A macOS-style Dock for Windows 11</Description>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <!-- The tests, the installer and the artwork live in this folder too, but are not part of the app. -->
+  <ItemGroup>
+    <Compile Remove="tests/**;installer/**;art/**;tools/**;docs/**" />
+    <None Remove="tests/**;installer/**;art/**;tools/**;docs/**" />
+    <Page Remove="tests/**" />
+    <InternalsVisibleTo Include="Gravitone.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ManagedShell" Version="0.0.374" />
+    <PackageReference Include="Vortice.D3DCompiler" Version="3.8.3" />
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.DirectComposition" Version="3.8.3" />
+  </ItemGroup>
+
+  <!-- The taskbar guard runs this same app under its own process name (see Core/Guard.cs):
+       a copy of the app host still loads Gravitone.dll from the same folder. -->
+  <Target Name="CopyGuardHost" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetDir)$(AssemblyName).exe" DestinationFiles="$(TargetDir)GravitoneGuard.exe" SkipUnchangedFiles="true" Retries="10" RetryDelayMilliseconds="500" />
+  </Target>
+
+  <!-- Same trick for the published copy (single-file or not). -->
+  <Target Name="CopyGuardHostOnPublish" AfterTargets="Publish">
+    <Copy SourceFiles="$(PublishDir)$(AssemblyName).exe" DestinationFiles="$(PublishDir)GravitoneGuard.exe" SkipUnchangedFiles="true" Retries="10" RetryDelayMilliseconds="500" />
+  </Target>
+
+</Project>
+
+

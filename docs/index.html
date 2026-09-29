@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gravitone: a real Dock for Windows 11</title>
+<meta name="description" content="Gravitone replaces the Windows taskbar with a macOS-style Dock: acrylic plate, wave magnification, genie effect, menu bar. Open source, and the taskbar always comes back.">
+<meta property="og:title" content="Gravitone: a real Dock for Windows 11">
+<meta property="og:description" content="Replaces the taskbar, magnifies, flows windows into their icons, and gives the taskbar back the second it stops.">
+<meta property="og:image" content="https://lupanostefano.github.io/Gravitone/assets/social-preview.png">
+<link rel="icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Dark, committed look: the product lives on a colourful wallpaper, the page borrows its palette. */
+  :root {
+    --bg: #0a0920;
+    --bg2: #100e2c;
+    --ink: #f6f4ff;
+    --dim: rgba(246, 244, 255, .68);
+    --faint: rgba(246, 244, 255, .42);
+    --line: rgba(255, 255, 255, .12);
+    --card: rgba(255, 255, 255, .045);
+    --pink: #ff8fc4;
+    --violet: #7b6cff;
+    --cyan: #3cc8f0;
+    --display: "Bricolage Grotesque", "Segoe UI Variable Display", system-ui, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "Cascadia Mono", monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--ink); font: 400 17px/1.55 var(--display); -webkit-font-smoothing: antialiased; padding-inline: 20px; overflow-x: hidden; }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin-inline: auto; }
+  .glow { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(900px 600px at 12% -8%, rgba(123, 108, 255, .34), transparent 65%),
+      radial-gradient(800px 560px at 96% 4%, rgba(255, 95, 168, .24), transparent 65%),
+      radial-gradient(900px 520px at 50% 108%, rgba(60, 200, 240, .18), transparent 65%); }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding-block: 22px; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -.02em; text-decoration: none; }
+  .brand img { width: 30px; height: 30px; }
+  nav .links { display: flex; gap: 26px; font: 500 14px var(--mono); color: var(--dim); }
+  nav .links a { text-decoration: none; }
+  nav .links a:hover { color: var(--ink); }
+
+  .hero { padding-block: 56px 28px; display: grid; gap: 34px; }
+  .eyebrow { font: 500 13px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); display: flex; align-items: center; gap: 14px; }
+  .eyebrow::before { content: ""; width: 38px; height: 1px; background: var(--line); }
+  h1 { font-weight: 800; font-size: clamp(52px, 10.4vw, 128px); line-height: .9; letter-spacing: -.05em; text-wrap: balance; }
+  h1 span { background: linear-gradient(100deg, #fff, var(--pink) 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: clamp(20px, 2.6vw, 30px); line-height: 1.25; letter-spacing: -.015em; color: var(--dim); max-width: 24em; text-wrap: pretty; }
+  .lead em { font-style: normal; color: var(--ink); }
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 14px; font: 600 16px var(--display); text-decoration: none; border: 1px solid var(--line); background: var(--card); backdrop-filter: blur(10px); transition: transform .15s, border-color .15s; }
+  .btn:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, .34); }
+  .btn.primary { background: linear-gradient(100deg, var(--violet), #e2589f); border-color: transparent; box-shadow: 0 10px 34px -8px rgba(226, 88, 159, .55); }
+  .note { font: 400 13px var(--mono); color: var(--faint); }
+
+  .shot { margin-top: 18px; border-radius: 20px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .03); }
+  .shot img { display: block; width: 100%; height: auto; }
+
+  section { padding-block: 84px 0; }
+  h2 { font-weight: 800; font-size: clamp(34px, 5vw, 58px); line-height: 1; letter-spacing: -.035em; max-width: 14em; text-wrap: balance; }
+  .sub { color: var(--dim); font-size: 20px; margin-top: 18px; max-width: 34em; text-wrap: pretty; }
+
+  .split > *, .grid > *, .steps > *, .hero > * { min-width: 0; }
+  .split { display: grid; grid-template-columns: 1fr 1.25fr; gap: 44px; align-items: center; }
+  .frame { border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: #060516; box-shadow: 0 30px 70px -28px rgba(0, 0, 0, .7); }
+  .frame img, .frame video { display: block; width: 100%; height: auto; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 42px; }
+  .card { padding: 26px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); }
+  .card h3 { font-weight: 600; font-size: 21px; letter-spacing: -.02em; margin-bottom: 10px; }
+  .card p { color: var(--dim); font-size: 16px; }
+  .card code { font: 500 13px var(--mono); color: var(--pink); }
+
+  .safe { margin-top: 42px; border-radius: 20px; border: 1px solid var(--line); overflow: hidden; }
+  .row { display: grid; grid-template-columns: minmax(180px, 1fr) 2fr; gap: 24px; padding: 20px 26px; border-top: 1px solid var(--line); }
+  .row:first-child { border-top: 0; }
+  .row b { font-weight: 600; }
+  .row span { color: var(--dim); }
+  .row:nth-child(odd) { background: rgba(255, 255, 255, .025); }
+
+  .steps { counter-reset: s; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 42px; }
+  .step { padding: 26px; border-radius: 18px; border: 1px solid var(--line); background: var(--card); }
+  .step::before { counter-increment: s; content: "0" counter(s); font: 500 13px var(--mono); color: var(--pink); }
+  .step h3 { font-weight: 600; font-size: 20px; margin: 10px 0 8px; letter-spacing: -.02em; }
+  .step p { color: var(--dim); font-size: 16px; }
+
+  .frame.installer { max-width: 260px; justify-self: center; border-radius: 14px; }
+  .kofi { display: block; margin-top: 34px; border-radius: 22px; transition: transform .2s; }
+  .kofi img { display: block; width: 100%; height: auto; border-radius: 22px; box-shadow: 0 30px 70px -30px rgba(226, 88, 159, .55); }
+  .kofi:hover { transform: translateY(-3px); }
+
+  footer { margin-top: 96px; padding-block: 34px 48px; border-top: 1px solid var(--line); color: var(--faint); font: 400 13px/1.7 var(--mono); display: flex; flex-wrap: wrap; gap: 12px 40px; justify-content: space-between; }
+  footer a { color: var(--dim); }
+
+  @media (max-width: 860px) {
+    .split, .grid, .steps { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; gap: 6px; }
+    nav .links { display: none; }
+    section { padding-block: 64px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
+  :focus-visible { outline: 2px solid var(--pink); outline-offset: 3px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<div class="glow" aria-hidden="true"></div>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#"><img src="assets/logo.png" alt="">Gravitone</a>
+    <div class="links"><a href="#features">features</a><a href="#safe">safety</a><a href="#install">install</a><a href="#support">support</a><a href="https://github.com/lupanostefano/Gravitone">github</a></div>
+  </nav>
+
+  <header class="hero">
+    <div class="eyebrow">Windows 11 · open source · MIT</div>
+    <h1>Gravi<span>tone</span></h1>
+    <p class="lead">A real Dock for Windows. It <em>replaces the taskbar</em>, and hands it back the second it stops, whatever way it stops.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/lupanostefano/Gravitone/releases/latest">Download for Windows 11</a>
+      <a class="btn" href="https://github.com/lupanostefano/Gravitone">View on GitHub</a>
+      <span class="note">needs the .NET 9 Desktop Runtime · x64</span>
+    </div>
+    <div class="shot"><img src="assets/desktop.png" alt="Gravitone on a Windows 11 desktop: a menu bar across the top, a magnified Dock at the bottom" width="1920" height="1080"></div>
+  </header>
+
+  <section id="features">
+    <div class="split">
+      <div>
+        <h2>Windows flow into their icons.</h2>
+        <p class="sub">Minimize or restore from the Dock and the real window is bent through a funnel into its icon. It is drawn on the GPU, one frame per refresh of your monitor.</p>
+      </div>
+      <div class="frame"><video autoplay loop muted playsinline preload="metadata" aria-label="A window minimizing into its Dock icon and returning" width="1400" height="980"><source src="assets/genie.mp4" type="video/mp4"></video></div>
+    </div>
+
+    <div class="split" style="margin-top:64px">
+      <div class="frame"><video autoplay loop muted playsinline preload="metadata" aria-label="Icons growing in a wave under the pointer" width="1160" height="200"><source src="assets/magnify.mp4" type="video/mp4"></video></div>
+      <div>
+        <h2>A wave, not a zoom.</h2>
+        <p class="sub">Icons swell under the pointer and the one you are aiming at stays put. Labels, running dots, a bounce for launches and for apps that want attention.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card"><h3>Real acrylic</h3><p>The plate is a separate window with the Windows 11 <code>system backdrop</code> and antialiased rounded corners. Not a tinted rectangle.</p></div>
+      <div class="card"><h3>It takes the taskbar's place</h3><p>Registered as an app bar: maximized windows stop above it, the Windows taskbar is switched off while it runs.</p></div>
+      <div class="card"><h3>A menu bar</h3><p>Active app, your tray icons with working clicks and menus, Wi-Fi, volume, battery, clock. One per monitor.</p></div>
+      <div class="card"><h3>Edit it by hand</h3><p>Drag to reorder, drag out to remove in a puff of smoke, drop a program or folder to pin it. Folders become stacks.</p></div>
+      <div class="card"><h3>Many screens, any scale</h3><p>Pick the monitor, or push the pointer against another one's edge and the Dock follows. Sleep, lock and monitor changes handled.</p></div>
+      <div class="card"><h3>Light</h3><p>About <code>0.15%</code> of one CPU core when idle. Open source, MIT, no telemetry, no network access.</p></div>
+    </div>
+  </section>
+
+  <section id="safe">
+    <h2>The taskbar always comes back.</h2>
+    <p class="sub">Replacing the taskbar is only acceptable if you can never be left without one. So that is the first thing Gravitone is built around.</p>
+    <div class="safe">
+      <div class="row"><b>You quit it</b><span>The taskbar returns exactly as you had it, auto-hide state included.</span></div>
+      <div class="row"><b>It crashes, or you kill it</b><span>A guard process, deliberately not its child, sees it die and restores the taskbar.</span></div>
+      <div class="row"><b>Shutdown or sign-out</b><span>Restored while Explorer still exists; hidden again if the shutdown is cancelled.</span></div>
+      <div class="row"><b>Power cut while hidden</b><span>A sign-in fallback restores it at the next start.</span></div>
+      <div class="row"><b>You just want it, now</b><span><code style="font-family:var(--mono);font-size:14px">Ctrl + Alt + Shift + B</code> toggles it. <code style="font-family:var(--mono);font-size:14px">Gravitone.exe --restore-taskbar</code> is the emergency switch.</span></div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="split">
+      <div>
+        <h2>One setup, no admin rights.</h2>
+        <p class="sub">The installer puts Gravitone in your account, fetches the .NET 9 runtime from Microsoft if it is missing, and asks whether to start with Windows. Uninstalling gives the taskbar back before anything is deleted.</p>
+        <div class="cta" style="margin-top:28px">
+          <a class="btn primary" href="https://github.com/lupanostefano/Gravitone/releases/latest">Download the setup</a>
+          <a class="btn" href="https://github.com/lupanostefano/Gravitone/releases/latest">Portable zip</a>
+        </div>
+        <p class="note" style="margin-top:18px">Windows 11 x64 · English and Italian · not code-signed yet, SmartScreen may warn · SHA-256 sums and build provenance on every release</p>
+      </div>
+      <div class="frame installer"><img src="assets/installer-side.png" alt="The side image of the Gravitone setup wizard" width="410" height="785" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section id="support">
+    <h2>Free, and staying free.</h2>
+    <p class="sub">No ads, no tracking, no paid tier. If Gravitone made your Windows a little nicer, a coffee keeps the updates coming.</p>
+    <a class="kofi" href="https://ko-fi.com/hikari22"><img src="assets/support-banner.png" alt="Enjoying Gravitone? Buy me a coffee on Ko-fi" width="1280" height="320" loading="lazy"></a>
+  </section>
+
+  <footer>
+    <span>© 2026 Stefano Lupano · <a href="https://github.com/lupanostefano/Gravitone/blob/main/LICENSE">MIT license</a></span>
+    <span>Independent project. Not affiliated with Apple Inc. or Microsoft.<br>Third-party components: <a href="https://github.com/lupanostefano/Gravitone/blob/main/THIRD-PARTY-NOTICES.md">notices</a></span>
+  </footer>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Gravitone.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Gravitone.Tests/Gravitone.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,15 @@
+bin/
+obj/
+publish/
+publish.zip
+dist/
+TestResults/
+.vs/
+*.user
+*.suo
+# working notes of the AI assistant sessions are not part of the product
+.claude/
+
+# private working notes, not part of the public project
+ROADMAP.md
+CLAUDE.md

@@ -1,0 +1,83 @@
+name: Release
+
+# A tag v1.2.3 builds, tests and publishes: installer, portable zip, SHA-256 sums and build provenance.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for a dry run (no release is created)'
+        required: true
+        default: '0.0.0-dryrun'
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Version
+        id: v
+        shell: pwsh
+        run: |
+          $v = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '${{ inputs.version }}' }
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Test
+        run: dotnet test Gravitone.slnx -c Release
+
+      - name: Publish
+        run: >
+          dotnet publish Gravitone.csproj -c Release -r win-x64 --self-contained false -o publish
+          -p:Version=${{ steps.v.outputs.version }}
+
+      - name: Installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y }
+          & $iscc /Qp /DAppVersion=${{ steps.v.outputs.version }} /DSourceDir=..\publish installer\Gravitone.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
+
+      - name: Portable zip and checksums
+        shell: pwsh
+        run: |
+          $v = '${{ steps.v.outputs.version }}'
+          Compress-Archive -Path publish\* -DestinationPath "dist\Gravitone-$v-win-x64-portable.zip"
+          Get-ChildItem dist -File | Where-Object Extension -in '.exe', '.zip' | ForEach-Object {
+            "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name
+          } | Set-Content dist\SHA256SUMS.txt
+
+      - name: Build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'dist/*'
+
+      - name: Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+
+      - name: Keep the files of a dry run
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-dryrun
+          path: dist/*

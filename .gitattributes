@@ -1,0 +1,7 @@
+* text=auto eol=crlf
+*.sh text eol=lf
+*.png binary
+*.gif binary
+*.mp4 binary
+*.ico binary
+*.bmp binary

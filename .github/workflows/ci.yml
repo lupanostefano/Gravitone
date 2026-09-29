@@ -1,0 +1,117 @@
+name: CI
+
+# Every push and pull request is built in Debug and Release, format-checked, unit-tested and smoke-tested;
+# the installer is compiled; commits are checked for AI co-author trailers. main is protected on these checks.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-test:
+    name: Build and test (${{ matrix.configuration }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Restore
+        run: dotnet restore Gravitone.slnx
+
+      - name: Check formatting
+        if: matrix.configuration == 'Debug'
+        run: dotnet format Gravitone.slnx --verify-no-changes --no-restore --severity warn
+
+      - name: Build (warnings are errors)
+        run: dotnet build Gravitone.slnx -c ${{ matrix.configuration }} --no-restore -warnaserror
+
+      - name: Unit tests
+        run: >
+          dotnet test Gravitone.slnx -c ${{ matrix.configuration }} --no-build
+          --logger "trx;LogFileName=results.trx" --results-directory TestResults
+          --collect:"XPlat Code Coverage"
+
+      - name: Self-test of the built app
+        shell: pwsh
+        run: |
+          $exe = "bin/${{ matrix.configuration }}/net9.0-windows/Gravitone.exe"
+          $p = Start-Process $exe -ArgumentList '--selftest' -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { throw "self-test failed with exit code $($p.ExitCode)" }
+          if (-not (Test-Path "bin/${{ matrix.configuration }}/net9.0-windows/GravitoneGuard.exe")) { throw 'the guard host was not produced' }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.configuration }}
+          path: TestResults
+          retention-days: 14
+
+  installer:
+    name: Installer
+    runs-on: windows-latest
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+      - name: Publish
+        run: dotnet publish Gravitone.csproj -c Release -r win-x64 --self-contained false -o publish
+      - name: Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y; }
+          & $iscc /Qp /DAppVersion=0.0.0-ci /DSourceDir=..\publish installer\Gravitone.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-preview
+          path: dist/*.exe
+          retention-days: 7
+
+  commit-hygiene:
+    name: Commit hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: No AI co-author trailers
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ] && [ -n "${{ github.event.before }}" ]; then
+            range="${{ github.event.before }}..${{ github.sha }}"
+          else
+            range="${{ github.sha }}"
+          fi
+          if git log --format='%an %ae%n%cn %ce%n%B' $range | grep -iE 'co-authored-by:.*(claude|anthropic)|noreply@anthropic\.com|generated with \[?claude'; then
+            echo "::error::A commit names an AI assistant as author or co-author. Remove the trailer before merging."
+            exit 1
+          fi
+          echo "clean"

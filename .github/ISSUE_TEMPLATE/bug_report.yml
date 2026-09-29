@@ -1,0 +1,52 @@
+name: Bug report
+description: Something does not work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. If your taskbar is stuck hidden: **Ctrl + Alt + Shift + B**, or run `Gravitone.exe --restore-taskbar`.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+  - type: input
+    id: version
+    attributes:
+      label: Gravitone version
+      description: Run `Gravitone.exe --version` in a command prompt, or look at the setup file name.
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and build
+      placeholder: Windows 11 24H2, build 26100
+    validations:
+      required: true
+  - type: textarea
+    id: displays
+    attributes:
+      label: Monitors and scaling
+      placeholder: 2 monitors, 1920x1080 at 100% and 2560x1440 at 150%
+  - type: textarea
+    id: selftest
+    attributes:
+      label: Output of `Gravitone.exe --selftest`
+      render: text
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: The relevant lines of `%APPDATA%\Gravitone\log.txt` (check them for anything personal first).
+      render: text

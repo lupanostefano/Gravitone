@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      vortice:
+        patterns: ['Vortice.*']
+      tests:
+        patterns: ['xunit*', 'Microsoft.NET.Test.Sdk', 'coverlet.*']
+  - package-ecosystem: nuget
+    directory: /tests/Gravitone.Tests
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

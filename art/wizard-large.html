@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gravitone installer side image</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  /* Rendered at 410x785 (the 250% size of Inno Setup's 164x314 side image), scaled down for the others. */
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 410px; height: 785px; overflow: hidden; }
+  body { position: relative; font-family: "Bricolage Grotesque", "Segoe UI Variable Display", sans-serif; color: #f6f4ff;
+    background:
+      radial-gradient(520px 420px at 20% 8%, rgba(123, 108, 255, .55), transparent 70%),
+      radial-gradient(460px 420px at 100% 62%, rgba(255, 95, 168, .38), transparent 70%),
+      radial-gradient(420px 360px at 30% 100%, rgba(60, 200, 240, .30), transparent 70%),
+      linear-gradient(180deg, #1b1446 0%, #0d0a2c 55%, #080620 100%); }
+  /* orbits sweeping across the panel */
+  svg.orbits { position: absolute; inset: 0; }
+  .icon { position: absolute; left: 50%; top: 150px; width: 250px; height: 250px; transform: translateX(-50%);
+    filter: drop-shadow(0 26px 40px rgba(5, 3, 26, .6)); }
+  .name { position: absolute; left: 0; right: 0; top: 452px; text-align: center; font-weight: 800; font-size: 62px; letter-spacing: -.045em; }
+  .name b { background: linear-gradient(100deg, #fff, #ff8fc4 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tag { position: absolute; left: 0; right: 0; top: 540px; text-align: center; font-weight: 600; font-size: 25px; line-height: 1.25; color: rgba(246, 244, 255, .72); }
+  .foot { position: absolute; left: 0; right: 0; bottom: 42px; text-align: center; font: 500 17px "Geist Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: rgba(246, 244, 255, .45); }
+  .stars i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fff; }
+</style>
+</head>
+<body>
+  <svg class="orbits" viewBox="0 0 410 785" aria-hidden="true">
+    <defs>
+      <linearGradient id="o" x1="0" x2="1"><stop offset="0" stop-color="#3cc8f0" stop-opacity=".0"/><stop offset=".5" stop-color="#b9a8ff" stop-opacity=".55"/><stop offset="1" stop-color="#ff8fc4" stop-opacity=".0"/></linearGradient>
+    </defs>
+    <ellipse cx="205" cy="275" rx="330" ry="96" fill="none" stroke="url(#o)" stroke-width="2" transform="rotate(-18 205 275)"/>
+    <ellipse cx="205" cy="275" rx="430" ry="150" fill="none" stroke="url(#o)" stroke-width="1.5" opacity=".6" transform="rotate(-18 205 275)"/>
+    <ellipse cx="205" cy="275" rx="540" ry="210" fill="none" stroke="url(#o)" stroke-width="1" opacity=".4" transform="rotate(-18 205 275)"/>
+  </svg>
+  <div class="stars" aria-hidden="true">
+    <i style="left:46px;top:70px;opacity:.8"></i><i style="left:352px;top:112px;opacity:.55"></i>
+    <i style="left:330px;top:430px;opacity:.4;width:3px;height:3px"></i><i style="left:58px;top:640px;opacity:.45;width:3px;height:3px"></i>
+    <i style="left:372px;top:690px;opacity:.35;width:3px;height:3px"></i>
+  </div>
+  <img class="icon" src="icon.svg" alt="">
+  <div class="name">Gravi<b>tone</b></div>
+  <div class="tag">A real Dock<br>for Windows 11</div>
+  <div class="foot">open source · MIT</div>
+</body>
+</html>

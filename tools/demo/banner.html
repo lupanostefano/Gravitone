@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gravitone banner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  /* 1280x640: GitHub social preview / README header. Built from the real product: wallpaper, menu bar and dock are captures. */
+  :root { --ink: #f6f4ff; --dim: rgba(246,244,255,.72); --line: rgba(255,255,255,.18); --glow: 255 120 190; }
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1280px; height: 640px; overflow: hidden; background: #0b0a1e; font-family: "Bricolage Grotesque", "Segoe UI Variable Display", sans-serif; color: var(--ink); position: relative; }
+  .wall { position: absolute; inset: -40px; background: url(../../docs/assets/demo-wallpaper.png) center/cover; filter: saturate(1.15) brightness(.78); }
+  .shade { position: absolute; inset: 0; background:
+      radial-gradient(900px 420px at 18% 38%, rgba(8,6,30,.72), transparent 70%),
+      linear-gradient(180deg, rgba(8,6,30,.25), rgba(8,6,30,.05) 45%, rgba(8,6,30,.55)); }
+  .menubar { position: absolute; left: 0; top: 0; width: 1280px; height: 26px; background: url(../../docs/assets/banner-menubar.png) left top / 1280px 26px; opacity: .95; }
+  .copy { position: absolute; left: 84px; top: 132px; width: 760px; }
+  .eyebrow { font: 500 15px/1 "Geist Mono", ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); display: flex; gap: 14px; align-items: center; }
+  .eyebrow i { display: inline-block; width: 38px; height: 1px; background: var(--line); }
+  h1 { font-weight: 800; font-size: 124px; line-height: .92; letter-spacing: -.045em; margin-top: 26px; }
+  h1 b { font-weight: 800; background: linear-gradient(100deg, #fff 0%, #ffd0ea 55%, #ff8fc4 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  p { font-weight: 500; font-size: 30px; line-height: 1.22; letter-spacing: -.012em; margin-top: 26px; color: var(--dim); max-width: 620px; }
+  p em { font-style: normal; color: var(--ink); }
+  .dock { position: absolute; left: 0; bottom: 0; width: 1280px; height: 130px; background: url(../../docs/assets/banner-dock.png) center bottom / 1280px 130px no-repeat; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 38%); mask-image: linear-gradient(180deg, transparent 0, #000 38%); }
+  .tags { position: absolute; right: 84px; top: 132px; display: flex; flex-direction: column; gap: 12px; align-items: flex-end; font: 500 15px/1 "Geist Mono", ui-monospace, monospace; letter-spacing: .06em; color: var(--dim); }
+  .tags span { padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: rgba(10,8,34,.35); backdrop-filter: blur(8px); }
+</style>
+</head>
+<body>
+  <div class="wall"></div><div class="shade"></div><div class="menubar"></div>
+  <div class="copy">
+    <div class="eyebrow"><i></i>Windows 11 · open source</div>
+    <h1>Gravi<b>tone</b></h1>
+    <p>A real Dock for Windows. It <em>replaces the taskbar</em>, and puts it back the moment it stops.</p>
+  </div>
+  <div class="tags"><span>acrylic plate</span><span>wave magnification</span><span>genie effect</span><span>menu bar</span></div>
+  <div class="dock"></div>
+</body>
+</html>
+
