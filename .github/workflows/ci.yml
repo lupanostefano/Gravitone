@@ -88,6 +88,10 @@ jobs:
           if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y; }
           & $iscc /Qp /DAppVersion=0.0.0-ci.${{ github.run_number }} /DSourceDir=..\publish installer\Gravitone.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
+      - name: Install, run and uninstall like a user
+        shell: pwsh
+        run: ./tools/test-install.ps1 -Setup (Get-ChildItem dist/*-setup.exe | Select-Object -First 1).FullName
+
       - uses: actions/upload-artifact@v7
         with:
           name: installer-preview

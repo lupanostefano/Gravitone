@@ -53,6 +53,10 @@ jobs:
           & $iscc /Qp /DAppVersion=${{ steps.v.outputs.version }} /DSourceDir=..\publish installer\Gravitone.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
 
+      - name: Install, run and uninstall like a user
+        shell: pwsh
+        run: ./tools/test-install.ps1 -Setup (Get-ChildItem dist/*-setup.exe | Select-Object -First 1).FullName
+
       - name: Portable zip and checksums
         shell: pwsh
         run: |
