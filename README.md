@@ -21,6 +21,10 @@
 It replaces the taskbar, magnifies like a Mac's, flows windows into their icons like a genie,<br>
 and hands the taskbar back the second it stops, whatever way it stops.
 
+<br>
+
+<a href="https://ko-fi.com/hikari22"><img src="docs/assets/support-banner.png" alt="Enjoying Gravitone? Buy me a coffee on Ko-fi" width="760"></a>
+
 </div>
 
 <br>
@@ -195,11 +199,10 @@ More detail (in Italian, for now): [docs/technical-notes.it.md](docs/technical-n
 
 ## Support
 
-Gravitone is free, open source and has no ads. If it made your Windows a little nicer, a coffee keeps it going.
+Gravitone is free, open source and has no ads. If it made your Windows a little nicer, a coffee keeps it going:
+[**ko-fi.com/hikari22**](https://ko-fi.com/hikari22) (or the *Sponsor* button at the top of this page).
 
-<p align="center">
-  <a href="https://ko-fi.com/hikari22"><img src="docs/assets/support-banner.png" alt="Enjoying Gravitone? Buy me a coffee on Ko-fi" width="760"></a>
-</p>
+<a href="https://ko-fi.com/hikari22"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support Gravitone on Ko-fi" height="36"></a>
 
 Bug reports and ideas are just as welcome: [open an issue](https://github.com/lupanostefano/Gravitone/issues/new/choose).
 
