@@ -83,6 +83,9 @@ internal sealed class DockWindow : Window
     // Sleep, lock, screen off: why the dock is paused (it runs again when none is left)
     readonly HashSet<string> _pauseReasons = [];
     readonly DispatcherTimer _settleTimer = new() { Interval = TimeSpan.FromSeconds(3) };
+    // Started at sign-in the shell may not be ready: for the first seconds, retry what failed to load.
+    readonly DispatcherTimer _startupCheck = new() { Interval = TimeSpan.FromSeconds(5) };
+    int _startupPasses;
     IntPtr _powerNotify;
     DispatcherTimer? _diagTimer;
     double _length;     // along the edge, DIP
@@ -255,6 +258,45 @@ internal sealed class DockWindow : Window
         if (_config.Settings.MenuBar) ShowMenuBar();
         UpdateFollowTimer();
         if (Environment.GetCommandLineArgs().Contains(AutoStart.AutoStartArg)) LaunchOpenAtStartItems();
+
+        _startupCheck.Tick += (_, _) => StartupCheck();
+        _startupCheck.Start();
+    }
+
+    /// <summary>
+    /// Right after sign-in the shell can be slow to answer: icons come back empty, the glass is drawn
+    /// flat. Load again what is missing; and if the dock still cannot show its apps, do not leave the
+    /// user without any taskbar: give the Windows taskbar back for this run.
+    /// </summary>
+    void StartupCheck()
+    {
+        _startupPasses++;
+        bool loaded = false;
+        foreach (var item in _pinned.Concat(_folders).Append(_trash)) loaded |= item.ReloadIcon();
+        _backdrop.ApplyTheme();
+        _backdrop.Reactivate();
+        if (loaded)
+        {
+            Log.Info("Icons that were missing at startup are loaded now");
+            SyncWindows();
+        }
+
+        int withIcon = _pinned.Count(i => i.Icon is not null);
+        bool complete = withIcon == _pinned.Count;
+        bool usable = withIcon * 2 >= _pinned.Count;
+        if (complete && _startupPasses >= 3)
+        {
+            _startupCheck.Stop();
+        }
+        else if (_startupPasses >= 8)
+        {
+            _startupCheck.Stop();
+            if (!usable && _replacer is { Enabled: true })
+            {
+                Log.Info($"The dock has icons for {withIcon} of {_pinned.Count} apps after startup: giving the Windows taskbar back");
+                _replacer.SetEnabled(false);
+            }
+        }
     }
 
     protected override void OnContentRendered(EventArgs e)

@@ -93,6 +93,18 @@ internal sealed class DockItem
     public string Target => Config.Target;
     public ImageSource? Icon { get; set; }
 
+    /// <summary>
+    /// Loads the icon again if it is missing: at sign-in the shell may not answer yet, and an icon
+    /// that failed once would stay empty. Returns true when one was found.
+    /// </summary>
+    public bool ReloadIcon()
+    {
+        if (Icon is not null) return false;
+        if (Kind != DockItemKind.App || IsStart || Config.Target.Length == 0) return false;
+        Icon = ShellItems.Icon(Config.Target);
+        return Icon is not null;
+    }
+
     /// <summary>Open windows of this app, most recently used first.</summary>
     public List<TrackedWindow> Windows { get; } = [];
     public bool IsRunning => Windows.Count > 0;
