@@ -5,6 +5,8 @@
 #ifndef AppVersion
   #define AppVersion "0.0.0"
 #endif
+; Windows file versions are numbers only: "0.3.0-beta" is stamped 0.3.0.
+#define VersionNumeric Copy(AppVersion, 1, Pos("-", AppVersion) > 0 ? Pos("-", AppVersion) - 1 : Len(AppVersion))
 #ifndef SourceDir
   #define SourceDir "..\publish"
 #endif
@@ -22,7 +24,7 @@ AppPublisherURL={#AppUrl}
 AppSupportURL={#AppUrl}/issues
 AppUpdatesURL={#AppUrl}/releases
 AppCopyright=© 2026 Stefano Lupano
-VersionInfoVersion={#AppVersion}
+VersionInfoVersion={#VersionNumeric}
 VersionInfoDescription={#AppName} Setup
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
