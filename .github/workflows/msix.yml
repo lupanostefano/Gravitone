@@ -2,6 +2,10 @@ name: MSIX (Store package)
 
 # Builds the Microsoft Store package by hand: a test package to try on a PC, or the one to upload to Partner Center.
 on:
+  # Runs on its own for pushes to the branch where the package is being tried (a manual run needs the file on main).
+  push:
+    branches: ['claude/trusting-wright-hftepj']
+    paths: ['.github/workflows/msix.yml', 'tools/build-msix.ps1', 'packaging/msix/**']
   workflow_dispatch:
     inputs:
       version:
@@ -33,7 +37,7 @@ jobs:
       - name: Build the package
         shell: pwsh
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ inputs.version || '0.2.1' }}
           STORE: ${{ inputs.store }}
         run: |
           $params = @{ Version = $env:VERSION }
