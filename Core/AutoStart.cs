@@ -2,7 +2,11 @@ using Microsoft.Win32;
 
 namespace Gravitone.Core;
 
-/// <summary>Starting Gravitone at sign-in, through the user's Run key (like any tray app).</summary>
+/// <summary>
+/// Starting Gravitone at sign-in, through the user's Run key (like any tray app). In the Store package
+/// none of this applies: its registry writes go to a private copy Windows never reads, and a scheduled
+/// task would point into a folder that changes with every update. There the manifest's startup task does it.
+/// </summary>
 internal static class AutoStart
 {
     const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
@@ -23,6 +27,7 @@ internal static class AutoStart
     {
         get
         {
+            if (AppPackage.IsPackaged) return true; // the manifest's startup task, on unless the user turned it off in Windows
             try
             {
                 using var run = Registry.CurrentUser.OpenSubKey(RunKey);
@@ -46,6 +51,7 @@ internal static class AutoStart
     /// </summary>
     public static void Ensure()
     {
+        if (AppPackage.IsPackaged) return;
         RemoveLegacyEntries();
         try
         {
@@ -91,6 +97,7 @@ internal static class AutoStart
     /// </summary>
     public static void SetRestoreFallback(bool enabled)
     {
+        if (AppPackage.IsPackaged) return; // RunOnce would be virtualized too: the guard covers a dock that dies
         try
         {
             using var runOnce = Registry.CurrentUser.CreateSubKey(RunOnceKey);
@@ -105,6 +112,7 @@ internal static class AutoStart
 
     public static void Set(bool enabled)
     {
+        if (AppPackage.IsPackaged) return;
         try
         {
             using (var run = Registry.CurrentUser.CreateSubKey(RunKey))

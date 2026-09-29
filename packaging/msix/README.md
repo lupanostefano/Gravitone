@@ -11,9 +11,10 @@ Work in progress: a first package to try on a PC, before anything is submitted t
 
 - The Windows taskbar is hidden and restored (also with Ctrl+Alt+Shift+B and after a crash: the guard process).
 - The dock, the menu bar and the tray icons work.
-- Start with Windows: `AutoStart` writes the `Run` key and a scheduled task; in a package the registry is
-  virtualized and Windows never reads that key at sign-in, so this needs a `windows.startupTask` in the manifest
-  and the `StartupTask` API before a Store release.
+- Start with Windows: in a package the `Run` key is virtualized and Windows never reads it, so the manifest
+  has a `windows.startupTask` (on by default) and `AutoStart` does nothing when packaged (`AppPackage.IsPackaged`).
+  Windows starts it at the next sign-in, after the app has been opened once. The "Start with Windows" setting
+  does not switch it yet (that needs the `StartupTask` API); the user can turn it off in Settings > Apps > Startup.
 - Uninstalling the package does not run `--uninstall`; the guard restores the taskbar when the dock is stopped.
 
 ## For the Store submission

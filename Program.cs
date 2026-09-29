@@ -61,7 +61,8 @@ internal sealed class App : Application
         AppDomain.CurrentDomain.ProcessExit += (_, _) => TaskbarState.Restore(onlyForPid: Environment.ProcessId);
 
         // Started at sign-in, possibly before Explorer has its taskbar: the tray and the app bars need it.
-        if (Environment.GetCommandLineArgs().Contains(AutoStart.AutoStartArg)) WaitForExplorer();
+        // (A startup task of the Store package cannot pass the argument, so a packaged start always waits.)
+        if (AppPackage.IsPackaged || Environment.GetCommandLineArgs().Contains(AutoStart.AutoStartArg)) WaitForExplorer();
 
         Theme.Refresh();
         var config = DockConfig.LoadOrCreate();
