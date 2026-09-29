@@ -19,7 +19,8 @@ Work in progress: a first package to try on a PC, before anything is submitted t
 ## For the Store submission
 
 - `Identity Name`, `Publisher` and `PublisherDisplayName` come from Partner Center (Product management >
-  Product identity); pass them to the workflow or the script. The Store signs the package.
+  Product identity) and are built into `tools/build-msix.ps1 -Store` (the workflow's "store" input).
+  The Store signs the package, so it is not signed here.
 - `runFullTrust` is a restricted capability: Partner Center asks why the app needs it.
 - The package is self-contained (the Store package cannot rely on the .NET runtime being installed).
 - Certification policy 10.2 (security, and consent before changing the user's Windows experience) is the

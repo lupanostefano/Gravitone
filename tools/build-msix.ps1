@@ -10,8 +10,8 @@
   package signed with a throw-away certificate, to try it on a PC (see the message printed at the end).
 
 .EXAMPLE
-  # Store package, with the identity Partner Center shows under "Product identity":
-  ./tools/build-msix.ps1 -Version 0.2.2 -IdentityName 12345Publisher.Gravitone -Publisher 'CN=AAAAAAAA-...' -PublisherDisplayName 'Stefano Lupano'
+  # The package to upload to Partner Center (the identity of the reserved product, unsigned):
+  ./tools/build-msix.ps1 -Version 0.2.2 -Store
 
 .EXAMPLE
   # A test package for sideloading (test identity, signed with a self-made certificate):
@@ -21,11 +21,20 @@ param(
     [string]$Version = '0.2.1',
     [string]$IdentityName = 'Gravitone.Test',
     [string]$Publisher = 'CN=Gravitone Test',
-    [string]$PublisherDisplayName = 'Stefano Lupano',
+    [string]$PublisherDisplayName = 'Gravitone Test',
+    [switch]$Store,
     [switch]$Sign
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ($Store) {
+    # The identity of the reserved product (Partner Center > Product management > Product identity).
+    $IdentityName = 'HikariHasegawa.Gravitone'
+    $Publisher = 'CN=5D37776B-7FD8-4952-8F23-6A044902DAFD'
+    $PublisherDisplayName = 'Hikari Hasegawa'
+    if ($Sign) { throw '-Store and -Sign do not go together: the Store signs the package, and a test certificate for the real identity would get in the way of the Store version on this PC.' }
+}
 $root = Resolve-Path (Join-Path $PSScriptRoot '..')
 $work = Join-Path $root 'build\msix'
 $layout = Join-Path $work 'layout'

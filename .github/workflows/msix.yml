@@ -1,6 +1,6 @@
 name: MSIX (Store package)
 
-# Builds the Microsoft Store package by hand, to try it before the Store is part of the release.
+# Builds the Microsoft Store package by hand: a test package to try on a PC, or the one to upload to Partner Center.
 on:
   workflow_dispatch:
     inputs:
@@ -8,12 +8,10 @@ on:
         description: 'Package version'
         required: true
         default: '0.2.1'
-      identity_name:
-        description: 'Package identity name (Partner Center > Product identity); empty for a test identity'
-        required: false
-      publisher:
-        description: 'Publisher (CN=...) from Partner Center; empty for a test identity'
-        required: false
+      store:
+        description: 'Package for the Store (identity of the reserved product, unsigned). Off: a test package, signed with a test certificate.'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -36,17 +34,10 @@ jobs:
         shell: pwsh
         env:
           VERSION: ${{ inputs.version }}
-          IDENTITY_NAME: ${{ inputs.identity_name }}
-          PUBLISHER: ${{ inputs.publisher }}
+          STORE: ${{ inputs.store }}
         run: |
           $params = @{ Version = $env:VERSION }
-          if ($env:IDENTITY_NAME -and $env:PUBLISHER) {
-            # A Store identity: Partner Center signs the package, no test certificate.
-            $params.IdentityName = $env:IDENTITY_NAME
-            $params.Publisher = $env:PUBLISHER
-          } else {
-            $params.Sign = $true
-          }
+          if ($env:STORE -eq 'true') { $params.Store = $true } else { $params.Sign = $true }
           ./tools/build-msix.ps1 @params
 
       - uses: actions/upload-artifact@v7
