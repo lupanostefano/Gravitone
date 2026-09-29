@@ -1,0 +1,55 @@
+name: MSIX (Store package)
+
+# Builds the Microsoft Store package by hand, to try it before the Store is part of the release.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version'
+        required: true
+        default: '0.2.1'
+      identity_name:
+        description: 'Package identity name (Partner Center > Product identity); empty for a test identity'
+        required: false
+      publisher:
+        description: 'Publisher (CN=...) from Partner Center; empty for a test identity'
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  msix:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Build the package
+        shell: pwsh
+        env:
+          VERSION: ${{ inputs.version }}
+          IDENTITY_NAME: ${{ inputs.identity_name }}
+          PUBLISHER: ${{ inputs.publisher }}
+        run: |
+          $params = @{ Version = $env:VERSION }
+          if ($env:IDENTITY_NAME -and $env:PUBLISHER) {
+            # A Store identity: Partner Center signs the package, no test certificate.
+            $params.IdentityName = $env:IDENTITY_NAME
+            $params.Publisher = $env:PUBLISHER
+          } else {
+            $params.Sign = $true
+          }
+          ./tools/build-msix.ps1 @params
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gravitone-msix
+          path: dist/*

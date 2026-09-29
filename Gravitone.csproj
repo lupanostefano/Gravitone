@@ -28,8 +28,8 @@
 
   <!-- The tests, the installer and the artwork live in this folder too, but are not part of the app. -->
   <ItemGroup>
-    <Compile Remove="tests/**;installer/**;art/**;tools/**;docs/**" />
-    <None Remove="tests/**;installer/**;art/**;tools/**;docs/**" />
+    <Compile Remove="tests/**;installer/**;art/**;tools/**;docs/**;packaging/**;build/**" />
+    <None Remove="tests/**;installer/**;art/**;tools/**;docs/**;packaging/**;build/**" />
     <Page Remove="tests/**" />
     <InternalsVisibleTo Include="Gravitone.Tests" />
   </ItemGroup>
