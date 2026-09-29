@@ -119,7 +119,9 @@ The taskbar comes back. Every time.
 - Checks for the .NET 9 Desktop Runtime and, if it is missing, downloads it from Microsoft for you.
 - Lets you choose "start with Windows" and a desktop shortcut, in English or Italian.
 - Adds a *Restore the Windows taskbar* shortcut to the Start menu, just in case.
-- **Uninstalling** quits the Dock, gives the taskbar back and removes the start-up entries, before deleting anything.
+- **Updating:** run the new setup. A running Gravitone is closed (taskbar handed back for the moment), updated and started again.
+- **Uninstalling** quits the Dock, gives the taskbar back and removes the start-up entries, before deleting anything. Your settings stay in `%APPDATA%\Gravitone` for a later reinstall.
+- Silent install for IT: `Gravitone-<version>-setup.exe /VERYSILENT /CURRENTUSER /TASKS="autostart"`.
 
 **Portable.** `Gravitone-<version>-win-x64-portable.zip`: unzip anywhere, install the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) if needed, run `Gravitone.exe`. To remove it: `Gravitone.exe --uninstall`, then delete the folder.
 
@@ -170,7 +172,7 @@ bin\Debug\net9.0-windows\Gravitone.exe
 
 `Gravitone.exe --selftest` checks the parts that need no window (displays, language, layout, shell icons). The installer is `installer/Gravitone.iss` ([Inno Setup 6](https://jrsoftware.org/isinfo.php)); the icon and the installer art are drawn from `art/` by `tools/make-icon.ps1` and `tools/make-installer-art.ps1`.
 
-**Every change goes through CI** ([`.github/workflows`](.github/workflows)): Debug and Release builds with warnings as errors, a formatting check, the unit tests, the self-test of the built app, the installer build, CodeQL, and a check that no commit credits an AI assistant as author. A tag `vX.Y.Z` publishes the release with the installer, the portable zip, checksums and provenance. See [CONTRIBUTING.md](CONTRIBUTING.md).
+**Every change goes through CI** ([`.github/workflows`](.github/workflows)): Debug and Release builds with warnings as errors, a formatting check, the unit tests, the self-test of the built app, the installer build, CodeQL, and a check that no commit credits an AI assistant as author. The installer is also exercised like a user would: silent install, self-test of the installed copy, uninstall, and a check that nothing is left behind (`tools/test-install.ps1`). A tag `vX.Y.Z` runs all of it again and publishes the release with the installer, the portable zip, checksums and provenance. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 The interesting parts of the code:
 
