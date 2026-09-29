@@ -87,7 +87,8 @@ $manifest = $manifest.Replace('@IDENTITY_NAME@', $IdentityName).Replace('@PUBLIS
     Replace('@PUBLISHER_DISPLAY_NAME@', $PublisherDisplayName).Replace('@VERSION@', $msixVersion)
 Set-Content (Join-Path $layout 'AppxManifest.xml') $manifest -Encoding UTF8
 
-$msix = Join-Path $dist "Gravitone-$msixVersion-x64.msix"
+$suffix = if ($Store) { '-store' } else { '-test' }
+$msix = Join-Path $dist "Gravitone-$msixVersion-x64$suffix.msix"
 Write-Host "Packing $msix..."
 & (Find-SdkTool 'makeappx.exe') pack /d $layout /p $msix /o
 if ($LASTEXITCODE -ne 0) { throw "makeappx failed ($LASTEXITCODE)" }
@@ -107,6 +108,7 @@ To try it on a PC (PowerShell as administrator, once):
   Import-Certificate -FilePath Gravitone-test.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople
 Then, as the user:
   Add-AppxPackage .\$([IO.Path]::GetFileName($msix))
+(The certificate is a new one each run: import the .cer that comes with the package.)
 Remove it with:
   Get-AppxPackage $IdentityName | Remove-AppxPackage
 "@

@@ -1,21 +1,18 @@
 name: MSIX (Store package)
 
-# Builds the Microsoft Store package by hand: a test package to try on a PC, or the one to upload to Partner Center.
+# Builds both packages: the test one (to try on a PC, signed with a test certificate) and the one to upload to
+# Partner Center (the identity of the reserved product, unsigned: the Store signs it).
 on:
   # Runs on its own for pushes to the branch where the package is being tried (a manual run needs the file on main).
   push:
     branches: ['claude/trusting-wright-hftepj']
-    paths: ['.github/workflows/msix.yml', 'tools/build-msix.ps1', 'packaging/msix/**']
+    paths: ['.github/workflows/msix.yml', 'tools/build-msix.ps1', 'packaging/msix/**', 'Core/**', 'UI/**']
   workflow_dispatch:
     inputs:
       version:
         description: 'Package version'
         required: true
         default: '0.2.1'
-      store:
-        description: 'Package for the Store (identity of the reserved product, unsigned). Off: a test package, signed with a test certificate.'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -34,17 +31,24 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Build the package
+      - name: Build the packages
         shell: pwsh
         env:
           VERSION: ${{ inputs.version || '0.2.1' }}
-          STORE: ${{ inputs.store }}
         run: |
-          $params = @{ Version = $env:VERSION }
-          if ($env:STORE -eq 'true') { $params.Store = $true } else { $params.Sign = $true }
-          ./tools/build-msix.ps1 @params
+          ./tools/build-msix.ps1 -Version $env:VERSION -Sign
+          ./tools/build-msix.ps1 -Version $env:VERSION -Store
 
-      - uses: actions/upload-artifact@v7
+      - name: Test package (sideload)
+        uses: actions/upload-artifact@v7
         with:
-          name: gravitone-msix
-          path: dist/*
+          name: gravitone-msix-test
+          path: |
+            dist/*-test.msix
+            dist/Gravitone-test.cer
+
+      - name: Store package (upload to Partner Center)
+        uses: actions/upload-artifact@v7
+        with:
+          name: gravitone-msix-store
+          path: dist/*-store.msix
